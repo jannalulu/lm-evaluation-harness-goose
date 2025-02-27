@@ -92,6 +92,8 @@ class HFLM(TemplateLM):
         autogptq: Optional[Union[bool, str]] = False,
         gptqmodel: Optional[bool] = False,
         gguf_file: Optional[str] = None,
+        # Chunked generation
+        chunked_generation_size: Optional[int] = None,
         **kwargs,
     ) -> None:
         super().__init__()
@@ -293,6 +295,13 @@ class HFLM(TemplateLM):
         if prefix_token_id is not None:
             eval_logger.info(
                 f"Loglikelihood prefix token id used in evaluation: {self.prefix_token_id}"
+            )
+            
+        # Store the chunked generation size for long context handling
+        self.chunked_generation_size = chunked_generation_size
+        if chunked_generation_size is not None:
+            eval_logger.info(
+                f"Using chunked generation with chunk size: {chunked_generation_size}"
             )
 
     def _get_accelerate_args(
@@ -895,14 +904,50 @@ class HFLM(TemplateLM):
         stopping_criteria = stop_sequences_criteria(
             self.tokenizer, stop, context.shape[1], context.shape[0]
         )
-        return self.model.generate(
-            input_ids=context,
-            max_length=max_length,
-            stopping_criteria=stopping_criteria,
-            pad_token_id=self.tokenizer.pad_token_id,
-            use_cache=True,
-            **generation_kwargs,
-        )
+        
+        if self.chunked_generation_size is not None and context.shape[1] > self.chunked_generation_size and context.shape[1] > 1:
+            eval_logger.info(f"Using chunked generation for context of length {context.shape[1]}")
+            
+            chunk_size = self.chunked_generation_size
+            past_key_values = None
+            
+            with torch.no_grad():
+                # Process all tokens in chunks except the last one
+                for i in range(0, chunk_input_ids.shape[1], chunk_size):
+                    chunk = chunk_input_ids[:, i:i + chunk_size]
+
+                    # Pass the chunk and the previous KV cache to the model
+                    outputs = self.model(
+                        input_ids=chunk,
+                        past_key_values=past_key_values,
+                        use_cache=True,
+                    )
+                    past_key_values = outputs.past_key_values
+            
+            # Do generation with the last token and KV cache
+            generation_output = self.model.generate(
+                input_ids=context[:, -1:],
+                past_key_values=past_key_values,
+                max_length=max_length - context.shape[1] + 1,
+                stopping_criteria=stopping_criteria,
+                pad_token_id=self.tokenizer.pad_token_id,
+                use_cache=True,
+                **generation_kwargs, 
+            )
+            
+            clear_torch_cache()
+
+            return generation_output
+        else:
+            # Standard generation without chunking
+            return self.model.generate(
+                input_ids=context,
+                max_length=max_length,
+                stopping_criteria=stopping_criteria,
+                pad_token_id=self.tokenizer.pad_token_id,
+                use_cache=True,
+                **generation_kwargs,
+            )
 
     def _select_cont_toks(
         self, logits: torch.Tensor, contlen: int = None, inplen: int = None
