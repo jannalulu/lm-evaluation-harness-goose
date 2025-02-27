@@ -297,7 +297,6 @@ class HFLM(TemplateLM):
                 f"Loglikelihood prefix token id used in evaluation: {self.prefix_token_id}"
             )
             
-        # Store the chunked generation size for long context handling
         self.chunked_generation_size = chunked_generation_size
         if chunked_generation_size is not None:
             eval_logger.info(
@@ -885,7 +884,6 @@ class HFLM(TemplateLM):
             else:
                 assert self.AUTO_MODEL_CLASS == transformers.AutoModelForCausalLM
                 return self.model(inps).logits
-
     def _model_generate(self, context, max_length, stop, **generation_kwargs):
         # temperature = 0.0 if not set
         # if do_sample is false and temp==0.0:
@@ -913,8 +911,8 @@ class HFLM(TemplateLM):
             
             with torch.no_grad():
                 # Process all tokens in chunks except the last one
-                for i in range(0, chunk_input_ids.shape[1], chunk_size):
-                    chunk = chunk_input_ids[:, i:i + chunk_size]
+                for i in range(0, context.shape[1], chunk_size):
+                    chunk = context[:, i:i + chunk_size]
 
                     # Pass the chunk and the previous KV cache to the model
                     outputs = self.model(
