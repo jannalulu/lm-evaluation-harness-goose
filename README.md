@@ -5,7 +5,7 @@
 ---
 
 ## Latest News 📣
-
+- [2025/03] This is a fork of lm-eval-harness at a specific moment in time to run evals RWKV models.
 - [2025/03] Added support for steering HF models!
 - [2025/02] Added [SGLang](https://docs.sglang.ai/) support!
 - [2024/09] We are prototyping allowing users of LM Evaluation Harness to create and evaluate on text+image multimodal input, text output tasks, and have just added the `hf-multimodal` and `vllm-vlm` model types and `mmmu` task as a prototype feature. We welcome users to try out this in-progress feature and stress-test it for themselves, and suggest they check out [`lmms-eval`](https://github.com/EvolvingLMMs-Lab/lmms-eval), a wonderful project originally forking off of the lm-evaluation-harness, for a broader range of multimodal tasks, models, and features.
