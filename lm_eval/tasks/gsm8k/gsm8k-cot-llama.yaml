@@ -56,6 +56,7 @@ filter_list:
   name: flexible-extract
 generation_kwargs:
   do_sample: false
+  max_gen_toks: 1024
   until:
   - '<|eot_id|>'
   - '<|start_header_id|>user<|end_header_id|>'
