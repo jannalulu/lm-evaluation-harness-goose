@@ -1,0 +1,157 @@
+{
+  "results": {
+    "niah_single_1": {
+      "alias": "niah_single_1",
+      "4096,none": -1,
+      "4096_stderr,none": "N/A",
+      "2048,none": 0.694,
+      "2048_stderr,none": 0.02062956999834541
+    }
+  },
+  "group_subtasks": {
+    "niah_single_1": []
+  },
+  "configs": {
+    "niah_single_1": {
+      "task": "niah_single_1",
+      "tag": [
+        "longcxt"
+      ],
+      "custom_dataset": "def niah_single_1(**kwargs):\n    seq_lengths = kwargs.pop(\"max_seq_lengths\", DEFAULT_SEQ_LENGTHS)\n    return download_dataset(\n        generate_samples(\n            get_haystack(type_haystack=\"repeat\"),\n            max_seq_length=seq,\n            template=TEMPLATE,\n            type_haystack=\"repeat\",\n            type_needle_k=\"words\",\n            type_needle_v=\"numbers\",\n            num_samples=500,\n            TOKENIZER=get_tokenizer(**kwargs),\n        )\n        for seq in seq_lengths\n    )\n",
+      "dataset_path": "",
+      "dataset_name": "",
+      "test_split": "test",
+      "doc_to_text": "{{input}}",
+      "doc_to_target": "{{outputs}}",
+      "unsafe_code": false,
+      "process_results": "def process_results(doc: dict, results: list[str]) -> dict[str, float]:\n    # hacky: set all other lengths to -1\n    metrics = {str(length): -1.0 for length in DEFAULT_SEQ_LENGTHS}\n    input_len = doc[\"max_length\"]\n    pred = postprocess_pred(results)\n    score = string_match_all(pred, [doc[\"outputs\"]])\n    metrics[str(input_len)] = score\n    return metrics\n",
+      "description": "",
+      "target_delimiter": " ",
+      "fewshot_delimiter": "\n\n",
+      "num_fewshot": 0,
+      "metric_list": [
+        {
+          "metric": "4096",
+          "aggregation": "def aggregate_metrics(metrics: list[float]) -> float:\n    res = [x for x in metrics if x != -1]\n    if not res:\n        # we don't have any samples with this length\n        return -1\n    return sum(res) / len(res)\n",
+          "higher_is_better": true
+        },
+        {
+          "metric": "8192",
+          "aggregation": "def aggregate_metrics(metrics: list[float]) -> float:\n    res = [x for x in metrics if x != -1]\n    if not res:\n        # we don't have any samples with this length\n        return -1\n    return sum(res) / len(res)\n",
+          "higher_is_better": true
+        },
+        {
+          "metric": "16384",
+          "aggregation": "def aggregate_metrics(metrics: list[float]) -> float:\n    res = [x for x in metrics if x != -1]\n    if not res:\n        # we don't have any samples with this length\n        return -1\n    return sum(res) / len(res)\n",
+          "higher_is_better": true
+        },
+        {
+          "metric": "32768",
+          "aggregation": "def aggregate_metrics(metrics: list[float]) -> float:\n    res = [x for x in metrics if x != -1]\n    if not res:\n        # we don't have any samples with this length\n        return -1\n    return sum(res) / len(res)\n",
+          "higher_is_better": true
+        },
+        {
+          "metric": "65536",
+          "aggregation": "def aggregate_metrics(metrics: list[float]) -> float:\n    res = [x for x in metrics if x != -1]\n    if not res:\n        # we don't have any samples with this length\n        return -1\n    return sum(res) / len(res)\n",
+          "higher_is_better": true
+        },
+        {
+          "metric": "131072",
+          "aggregation": "def aggregate_metrics(metrics: list[float]) -> float:\n    res = [x for x in metrics if x != -1]\n    if not res:\n        # we don't have any samples with this length\n        return -1\n    return sum(res) / len(res)\n",
+          "higher_is_better": true
+        }
+      ],
+      "output_type": "generate_until",
+      "generation_kwargs": {
+        "do_sample": false,
+        "temperature": 0.0,
+        "max_gen_toks": 128,
+        "until": []
+      },
+      "repeats": 1,
+      "should_decontaminate": false,
+      "gen_prefix": "{{gen_prefix}}",
+      "metadata": {
+        "version": 1.0,
+        "pretrained": "cartesia-ai/Llamba-8B",
+        "tokenizer": "meta-llama/Llama-3.1-8B",
+        "max_seq_lengths": [
+          2048
+        ]
+      }
+    }
+  },
+  "versions": {
+    "niah_single_1": 1.0
+  },
+  "n-shot": {
+    "niah_single_1": 0
+  },
+  "higher_is_better": {
+    "niah_single_1": {
+      "4096": true,
+      "8192": true,
+      "16384": true,
+      "32768": true,
+      "65536": true,
+      "131072": true
+    }
+  },
+  "n-samples": {
+    "niah_single_1": {
+      "original": 500,
+      "effective": 500
+    }
+  },
+  "config": {
+    "model": "llamba_ssm",
+    "model_args": "pretrained=cartesia-ai/Llamba-8B,tokenizer=meta-llama/Llama-3.1-8B,trust_remote_code=True",
+    "model_num_parameters": 8315868160,
+    "model_dtype": "",
+    "model_revision": "main",
+    "model_sha": "79374e3596b1275bbd7a7b458e6e9307355df06e",
+    "batch_size": "8",
+    "batch_sizes": [],
+    "device": null,
+    "use_cache": null,
+    "limit": null,
+    "bootstrap_iters": 100000,
+    "gen_kwargs": null,
+    "random_seed": 0,
+    "numpy_seed": 1234,
+    "torch_seed": 1234,
+    "fewshot_seed": 1234
+  },
+  "git_hash": "a0e121e",
+  "date": 1748932742.9504094,
+  "pretty_env_info": "'NoneType' object has no attribute 'splitlines'",
+  "transformers_version": "4.52.4",
+  "lm_eval_version": "0.4.8",
+  "upper_git_hash": "a0e121ebed3d2324c6d762b0e211a08d62583681",
+  "tokenizer_pad_token": [
+    "<|end_of_text|>",
+    "128001"
+  ],
+  "tokenizer_eos_token": [
+    "<|end_of_text|>",
+    "128001"
+  ],
+  "tokenizer_bos_token": [
+    "<|begin_of_text|>",
+    "128000"
+  ],
+  "eot_token_id": 128001,
+  "max_length": 4096,
+  "task_hashes": {},
+  "model_source": "llamba_ssm",
+  "model_name": "cartesia-ai/Llamba-8B",
+  "model_name_sanitized": "cartesia-ai__Llamba-8B",
+  "system_instruction": null,
+  "system_instruction_sha": null,
+  "fewshot_as_multiturn": false,
+  "chat_template": null,
+  "chat_template_sha": null,
+  "start_time": 15607572.319426278,
+  "end_time": 15607997.392670296,
+  "total_evaluation_time_seconds": "425.0732440184802"
+}
