@@ -67,7 +67,6 @@ lm_eval --model hf --model_args pretrained=EleutherAI/pythia-70m,trust_remote_co
 
 accelerate launch -m lm_eval --model hf --model_args pretrained=meta-llama/Llama-2-7b-hf,trust_remote_code=True,dtype=float16 --device cuda --tasks lambada_openai,piqa,winogrande,mmlu,arc_easy,arc_challenge,hellaswag --batch_size 8 --output_path /workspace/lm-evaluation-harness/results-0.4.8
 
-export PYTHONPATH=$PYTHONPATH:/workspace/MambaInLlama
 python benchmark/llm_eval/lm_harness_eval.py --model mamba2_hybrid --model_args pretrained=JunxiongWang/Mamba2InLlama_0_75 --tasks lambada_openai,piqa --device cuda --batch_size 16 --output_path /workspace/lm-evaluation-harness/results-0.4.8
 
 python -c "from datasets import load_dataset; 
@@ -89,3 +88,88 @@ for task, split in tasks.items():
   except Exception as e:
     print(f'Error loading {task}: {e}')
 "
+
+
+lm_eval --model hf --model_args pretrained=Qwen/Qwen3-4B,trust_remote_code=True --tasks gpqa[main] --batch_size 64 --output_path results --log_samples --apply_chat_template
+
+
+accelerate launch -m lm_eval --model hf --model_args pretrained=meta-llama/Llama-2-7b-hf,trust_remote_code=True --tasks gsm8k_cot_llama --apply_chat_template --batch_size 64 --output_path results-0.4.8
+
+accelerate launch supra_script.py --model hf --model_args pretrained=TRI-ML/mistral-supra,trust_remote_code=True --tasks gsm8k_cot_llama --apply_chat_template --batch_size 64 --output_path results-0.4.8
+
+accelerate launch supra_script.py --model hf --model_args pretrained=TRI-ML/mistral-supra,trust_remote_code=True --tasks humaneval_instruct --apply_chat_template --batch_size 16 --output_path results-0.4.8 --confirm_run_unsafe_code
+
+accelerate launch -m lm_eval --model hf --model_args pretrained=RWKV-Red-Team/ARWKV-7B-Preview-0.1,trust_remote_code=True --tasks gsm8k_cot_llama --apply_chat_template --batch_size 32 --output_path results-0.4.8 --num_fewshot 4
+
+lm_eval --model hf --model_args pretrained=RWKV-Red-Team/ARWKV-7B-Preview-0.1,trust_remote_code=True --tasks gsm8k --apply_chat_template --batch_size 8 --output_path results-0.4.8 --num_fewshot 4 --gen_kwargs max_new_tokens=512
+
+lm_eval --model hf --model_args pretrained=Qwen/Qwen2.5-7B-Instruct,trust_remote_code=True --tasks gsm8k_cot_llama --apply_chat_template --batch_size 32 --output_path results-0.4.8 --num_fewshot 0
+
+lm_eval --model hf --model_args pretrained=meta-llama/Llama-3.1-8B-Instruct,trust_remote_code=True --tasks humaneval_instruct --apply_chat_template --batch_size 16 --output_path results-0.4.8 --confirm_run_unsafe_code
+
+lm_eval --model hf --model_args pretrained=meta-llama/Llama-3.1-8B-Instruct,trust_remote_code=True --tasks niah_single_1 --apply_chat_template --batch_size 16 --output_path results-0.4.8 --metadata='{"max_seq_lengths":[8096]}'
+
+accelerate launch -m lm_eval --model hf --model_args pretrained=meta-llama/Llama-3.1-8B-Instruct,trust_remote_code=True --tasks niah_single_1 --apply_chat_template --batch_size 16 --output_path results-0.4.8 --metadata='{"max_seq_lengths":[16384]}'
+
+lm_eval --model hf --model_args pretrained=meta-llama/Llama-3.1-8B-Instruct,trust_remote_code=True --tasks minerva_math --apply_chat_template --batch_size 16 --output_path results-0.4.8 --gen_kwargs max_new_tokens=1024
+
+lm_eval --model hf --model_args pretrained=RWKV-Red-Team/ARWKV-7B-Preview-0.1,trust_remote_code=True --tasks minerva_math --apply_chat_template --batch_size 64 --output_path results-0.4.8 --gen_kwargs max_new_tokens=1024
+
+python -m evals.cartesia_lm_eval --model llamba_ssm --model_args pretrained=cartesia-ai/Llamba-8B,trust_remote_code=True --trust_remote_code --tasks gsm8k_cot_llama --cache_requests true --batch_size 8 --output_path /workspace/lm-evaluation-harness/results-0.4.8 --num_fewshot 5 --apply_chat_template --gen_kwargs max_new_tokens=512
+
+python -m evals.cartesia_lm_eval --model llamba_ssm --model_args pretrained=cartesia-ai/Llamba-8B,trust_remote_code=True --trust_remote_code --tasks gsm8k --cache_requests true --batch_size 8 --output_path /workspace/lm-evaluation-harness/results-0.4.8 --num_fewshot 5 --apply_chat_template --gen_kwargs max_new_tokens=512
+
+python -m evals.cartesia_lm_eval --model llamba_ssm --model_args pretrained=cartesia-ai/Llamba-8B --trust_remote_code --tasks humaneval_instruct --cache_requests true --batch_size 8 --output_path /workspace/lm-evaluation-harness/results-0.4.8 --apply_chat_template --confirm_run_unsafe_code
+
+python -m evals.cartesia_lm_eval --model llamba_ssm --model_args pretrained=cartesia-ai/Llamba-8B,tokenizer=meta-llama/Llama-3.1-8B --trust_remote_code --tasks niah_single_1 --cache_requests true --batch_size 8 --output_path /workspace/lm-evaluation-harness/results-0.4.8 --metadata='{"max_seq_lengths":[2048]}'
+
+python -m evals.cartesia_lm_eval --model llamba_ssm --model_args pretrained=cartesia-ai/Llamba-8B-untied,trust_remote_code=True --trust_remote_code --tasks gsm8k --cache_requests true --batch_size 8 --output_path /workspace/lm-evaluation-harness-goose/results-0.4.8 --num_fewshot 5 --gen_kwargs max_new_tokens=512
+
+python -m evals.cartesia_lm_eval --model llamba_ssm --model_args pretrained=cartesia-ai/Llamba-8B,trust_remote_code=True --trust_remote_code --tasks minerva_math --cache_requests true --batch_size 128 --output_path /home/ubuntu/lm-evaluation-harness-goose/results-0.4.8 --apply_chat_template --gen_kwargs max_new_tokens=1024
+
+
+python lm_harness_eval.py --model hybrid-phi-mamba --tasks gsm8k --device cuda --batch_size 64 --output_path results --num_fewshot 5 --gen_kwargs max_new_tokens=512 --apply_chat_template
+
+
+accelerate launch -m lm_eval --model hf --model_args pretrained=mistralai/Mistral-7B-Instruct-v0.1,trust_remote_code=True --tasks gsm8k_cot_llama --apply_chat_template --batch_size 16 --output_path results-0.4.8 --num_fewshot 0
+
+accelerate launch -m lm_eval --model hf --model_args pretrained=mistralai/Mistral-7B-Instruct-v0.1,trust_remote_code=True --tasks humaneval_instruct --apply_chat_template --batch_size 16 --output_path results-0.4.8 --confirm_run_unsafe_code
+
+
+lm_eval --model hf --model_args pretrained=meta-llama/Llama-3.1-8B-Instruct,trust_remote_code=True --tasks gsm8k_cot_llama --apply_chat_template --batch_size 16 --output_path results-0.4.8 --num_fewshot 0
+
+accelerate launch -m lm_eval --model hf --model_args pretrained=Qwen/Qwen2.5-7B-Instruct,trust_remote_code=True --tasks longbench --apply_chat_template --batch_size 64 --output_path results-0.4.8
+
+accelerate launch -m lm_eval --model hf --model_args pretrained=Qwen/Qwen2.5-72B-Instruct,trust_remote_code=True --tasks humaneval_instruct --apply_chat_template --batch_size 2 --output_path results-0.4.8 --confirm_run_unsafe_code
+
+accelerate launch -m lm_eval --model hf --model_args pretrained=Qwen/Qwen2.5-72B-Instruct,trust_remote_code=True,parallelize=True --tasks humaneval_instruct --apply_chat_template --batch_size 1 --output_path results-0.4.8 --confirm_run_unsafe_code
+
+accelerate launch supra_script.py --model hf --model_args pretrained=TRI-ML/mistral-supra,trust_remote_code=True --tasks humaneval_instruct --apply_chat_template --batch_size 64 --output_path results-0.4.8 --confirm_run_unsafe_code
+
+python lm_harness_eval.py --model hybrid-phi-mamba --tasks humaneval_instruct --device cuda --batch_size 64 --output_path /workspace/lm-evaluation-harness/results-0.4.8 --confirm_run_unsafe_code
+
+python benchmark/llm_eval/lm_harness_eval.py --model mamba2_hybrid --model_args pretrained=JunxiongWang/Mamba2InLlama_1 --tasks lambada_openai --num_fewshot 0 --device cuda:0 --batch_size 64 --output_path /workspace/lm-evaluation-harness-goose/results-0.4.8
+
+python benchmark/llm_eval/lm_harness_eval.py --model mamba2_hybrid --model_args pretrained=JunxiongWang/Mamba2InLlama_1 --tasks gsm8k --num_fewshot 5 --device cuda:0 --batch_size 16 --output_path /workspace/lm-evaluation-harness-goose/results-0.4.8 --gen_kwargs max_new_tokens=512 --apply_chat_template
+
+python benchmark/llm_eval/lm_harness_eval.py --model mamba2_hybrid --model_args pretrained=JunxiongWang/Mamba2InLlama_1 --tasks humaneval_instruct --device cuda:0 --batch_size 32 --output_path /workspace/lm-evaluation-harness-goose/results-0.4.8 --apply_chat_template --confirm_run_unsafe_code
+
+python -m eval.eval     --model hf     --tasks AIME25     --model_args "pretrained=Qwen/Qwen3-14B,trust_remote_code=True"     --batch_size 6     --output_path results     --verbosity DEBUG
+
+accelerate launch --num-processes 8 --num-machines 1 --multi-gpu -m eval.eval --model hf --tasks AIME25 --model_args "pretrained=recursal/RWKV7Qwen3-8B-InstructBase-250504,trust_remote_code=True" --batch_size 16 --output_path results --verbosity DEBUG
+
+python -m eval.eval --model hf --tasks AIME25 --model_args "pretrained=recursal/RWKV7Qwen3-8B-Instruct-dclmbigbrain-250509,trust_remote_code=True,enable_thinking=True,max_gen_length_stage1=4096,unthink_string='</think>\n\n### :white_check_mark: Final Answer:\n\n',extra_tokens_after_unthink=128" --batch_size 256 --output_path results --verbosity DEBUG
+
+python -m eval.eval --model hf --tasks AIME25 --model_args "pretrained=recursal/RWKV7Qwen3-8B-Instruct-dclmbigbrain-250509,trust_remote_code=True" --batch_size 4 --output_path results --verbosity DEBUG
+
+python -m eval.eval --model hf --tasks AIME25 --model_args "pretrained=recursal/RWKV7Qwen3-32B-Instruct-bigbrainposttrained-250513,trust_remote_code=True" --batch_size 16 --output_path results --verbosity DEBUG
+
+python -m eval.eval --model hf --tasks AIME25 --model_args "pretrained=Qwen/Qwen3-0.6B,trust_remote_code=True" --batch_size 256 --output_path results --apply_chat_template
+
+python -m eval.eval --model hf --tasks AIME25 --model_args "pretrained=recursal/RWKV7Qwen3-8B-Instruct-dclmbigbrain-250509" --batch_size 256 --output_path results --apply_chat_template
+
+python -m eval.eval --model hf --tasks IFEval --model_args "pretrained=recursal/RWKV7Qwen3-8B-Instruct-dclmbigbrain-250509,trust_remote_code=True,temperature=0.6,top_p=0.95,top_k=20" --batch_size 128 --output_path results --apply_chat_template
+
+inspect eval inspect_evals/humaneval --model hf/Qwen/Qwen2.5-7B-Instruct --cache-prompt=true --log-dir="results" --log-format=json --max-tokens 16758 
+
+lighteval accelerate "model_name=Qwen/Qwen3-8B,trust_remote_code=true,batch_size=4" "lighteval|gsm8k|0|0"
