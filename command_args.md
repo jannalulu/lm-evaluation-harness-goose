@@ -99,9 +99,9 @@ accelerate launch supra_script.py --model hf --model_args pretrained=TRI-ML/mist
 
 accelerate launch supra_script.py --model hf --model_args pretrained=TRI-ML/mistral-supra,trust_remote_code=True --tasks humaneval_instruct --apply_chat_template --batch_size 16 --output_path results-0.4.8 --confirm_run_unsafe_code
 
-accelerate launch -m lm_eval --model hf --model_args pretrained=RWKV-Red-Team/ARWKV-7B-Preview-0.1,trust_remote_code=True --tasks gsm8k_cot_llama --apply_chat_template --batch_size 32 --output_path results-0.4.8 --num_fewshot 4
+accelerate launch -m lm_eval --model hf --model_args pretrained=RWKV-Red-Team/ARWKV-7B-Preview-0.1,trust_remote_code=True --tasks gsm8k_cot_llama --apply_chat_template --batch_size 32 --output_path results-0.4.8 --num_fewshot 5
 
-lm_eval --model hf --model_args pretrained=RWKV-Red-Team/ARWKV-7B-Preview-0.1,trust_remote_code=True --tasks gsm8k --apply_chat_template --batch_size 8 --output_path results-0.4.8 --num_fewshot 4 --gen_kwargs max_new_tokens=512
+lm_eval --model hf --model_args pretrained=RWKV-Red-Team/ARWKV-7B-Preview-0.1,trust_remote_code=True --tasks gsm8k --apply_chat_template --batch_size 8 --output_path results-0.4.8 --num_fewshot 5 --gen_kwargs max_new_tokens=512
 
 lm_eval --model hf --model_args pretrained=Qwen/Qwen2.5-7B-Instruct,trust_remote_code=True --tasks gsm8k_cot_llama --apply_chat_template --batch_size 32 --output_path results-0.4.8 --num_fewshot 0
 
