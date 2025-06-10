@@ -1,0 +1,598 @@
+{
+  "results": {
+    "minerva_math": {
+      "exact_match,none": 0.0,
+      "exact_match_stderr,none": 0.0,
+      "math_verify,none": 0.7440476190476191,
+      "math_verify_stderr,none": 0.015686231318125708,
+      "alias": "minerva_math"
+    },
+    "minerva_math_algebra": {
+      "alias": " - minerva_math_algebra",
+      "exact_match,none": 0.0,
+      "exact_match_stderr,none": 0.0,
+      "math_verify,none": 0.8125,
+      "math_verify_stderr,none": 0.040045204719824215
+    },
+    "minerva_math_counting_and_prob": {
+      "alias": " - minerva_math_counting_and_prob",
+      "exact_match,none": 0.0,
+      "exact_match_stderr,none": 0.0,
+      "math_verify,none": 0.8958333333333334,
+      "math_verify_stderr,none": 0.03134124107007996
+    },
+    "minerva_math_geometry": {
+      "alias": " - minerva_math_geometry",
+      "exact_match,none": 0.0,
+      "exact_match_stderr,none": 0.0,
+      "math_verify,none": 0.6354166666666666,
+      "math_verify_stderr,none": 0.049381684905373244
+    },
+    "minerva_math_intermediate_algebra": {
+      "alias": " - minerva_math_intermediate_algebra",
+      "exact_match,none": 0.0,
+      "exact_match_stderr,none": 0.0,
+      "math_verify,none": 0.59375,
+      "math_verify_stderr,none": 0.05038911092686594
+    },
+    "minerva_math_num_theory": {
+      "alias": " - minerva_math_num_theory",
+      "exact_match,none": 0.0,
+      "exact_match_stderr,none": 0.0,
+      "math_verify,none": 0.9166666666666666,
+      "math_verify_stderr,none": 0.028356543640780045
+    },
+    "minerva_math_prealgebra": {
+      "alias": " - minerva_math_prealgebra",
+      "exact_match,none": 0.0,
+      "exact_match_stderr,none": 0.0,
+      "math_verify,none": 0.8854166666666666,
+      "math_verify_stderr,none": 0.03267930184391719
+    },
+    "minerva_math_precalc": {
+      "alias": " - minerva_math_precalc",
+      "exact_match,none": 0.0,
+      "exact_match_stderr,none": 0.0,
+      "math_verify,none": 0.46875,
+      "math_verify_stderr,none": 0.051198626369320335
+    }
+  },
+  "groups": {
+    "minerva_math": {
+      "exact_match,none": 0.0,
+      "exact_match_stderr,none": 0.0,
+      "math_verify,none": 0.7440476190476191,
+      "math_verify_stderr,none": 0.015686231318125708,
+      "alias": "minerva_math"
+    }
+  },
+  "group_subtasks": {
+    "minerva_math": [
+      "minerva_math_algebra",
+      "minerva_math_counting_and_prob",
+      "minerva_math_geometry",
+      "minerva_math_intermediate_algebra",
+      "minerva_math_num_theory",
+      "minerva_math_prealgebra",
+      "minerva_math_precalc"
+    ]
+  },
+  "configs": {
+    "minerva_math_algebra": {
+      "task": "minerva_math_algebra",
+      "tag": [
+        "math_word_problems"
+      ],
+      "dataset_path": "EleutherAI/hendrycks_math",
+      "dataset_name": "algebra",
+      "dataset_kwargs": {
+        "trust_remote_code": true
+      },
+      "training_split": "train",
+      "test_split": "test",
+      "process_docs": "def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:\n    def _process_doc(doc: dict) -> dict:\n        out_doc = {\n            \"problem\": doc[\"problem\"],\n            \"solution\": doc[\"solution\"],\n            \"answer\": normalize_final_answer(\n                remove_boxed(last_boxed_only_string(doc[\"solution\"]))\n            ),\n        }\n        if getattr(doc, \"few_shot\", None) is not None:\n            out_doc[\"few_shot\"] = True\n        return out_doc\n\n    return dataset.map(_process_doc)\n",
+      "doc_to_text": "def doc_to_text(doc: dict) -> str:\n    return \"Problem:\" + \"\\n\" + doc[\"problem\"] + \"\\n\\n\" + \"Solution:\"\n",
+      "doc_to_target": "{{answer if few_shot is undefined else solution}}",
+      "unsafe_code": false,
+      "process_results": "def process_results(doc: dict, results: List[str]) -> Dict[str, int]:\n    candidates = results[0]\n\n    unnormalized_answer = get_unnormalized_answer(candidates)\n    answer = normalize_final_answer(unnormalized_answer)\n\n    if is_equiv(answer, doc[\"answer\"]):\n        retval = 1\n    else:\n        retval = 0\n\n    # math_verify\n    res = verify(parse(doc[\"answer\"]), parse(candidates))\n    mathval = 1 if res else 0\n\n    results = {\n        \"exact_match\": retval,\n        \"math_verify\": mathval,\n    }\n    return results\n",
+      "description": "",
+      "target_delimiter": " ",
+      "fewshot_delimiter": "\n\n",
+      "fewshot_config": {
+        "sampler": "first_n",
+        "samples": "<function list_fewshot_samples at 0x7705d424e440>"
+      },
+      "num_fewshot": 4,
+      "metric_list": [
+        {
+          "metric": "exact_match",
+          "aggregation": "mean",
+          "higher_is_better": true
+        },
+        {
+          "metric": "math_verify",
+          "aggregation": "mean",
+          "higher_is_better": true
+        }
+      ],
+      "output_type": "generate_until",
+      "generation_kwargs": {
+        "until": [
+          "Problem:"
+        ],
+        "do_sample": true,
+        "temperature": 0.6,
+        "max_new_tokens": 8192
+      },
+      "repeats": 1,
+      "should_decontaminate": false,
+      "metadata": {
+        "version": 2.0,
+        "pretrained": "Qwen/Qwen3-8B",
+        "trust_remote_code": true
+      }
+    },
+    "minerva_math_counting_and_prob": {
+      "task": "minerva_math_counting_and_prob",
+      "tag": [
+        "math_word_problems"
+      ],
+      "dataset_path": "EleutherAI/hendrycks_math",
+      "dataset_name": "counting_and_probability",
+      "dataset_kwargs": {
+        "trust_remote_code": true
+      },
+      "training_split": "train",
+      "test_split": "test",
+      "process_docs": "def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:\n    def _process_doc(doc: dict) -> dict:\n        out_doc = {\n            \"problem\": doc[\"problem\"],\n            \"solution\": doc[\"solution\"],\n            \"answer\": normalize_final_answer(\n                remove_boxed(last_boxed_only_string(doc[\"solution\"]))\n            ),\n        }\n        if getattr(doc, \"few_shot\", None) is not None:\n            out_doc[\"few_shot\"] = True\n        return out_doc\n\n    return dataset.map(_process_doc)\n",
+      "doc_to_text": "def doc_to_text(doc: dict) -> str:\n    return \"Problem:\" + \"\\n\" + doc[\"problem\"] + \"\\n\\n\" + \"Solution:\"\n",
+      "doc_to_target": "{{answer if few_shot is undefined else solution}}",
+      "unsafe_code": false,
+      "process_results": "def process_results(doc: dict, results: List[str]) -> Dict[str, int]:\n    candidates = results[0]\n\n    unnormalized_answer = get_unnormalized_answer(candidates)\n    answer = normalize_final_answer(unnormalized_answer)\n\n    if is_equiv(answer, doc[\"answer\"]):\n        retval = 1\n    else:\n        retval = 0\n\n    # math_verify\n    res = verify(parse(doc[\"answer\"]), parse(candidates))\n    mathval = 1 if res else 0\n\n    results = {\n        \"exact_match\": retval,\n        \"math_verify\": mathval,\n    }\n    return results\n",
+      "description": "",
+      "target_delimiter": " ",
+      "fewshot_delimiter": "\n\n",
+      "fewshot_config": {
+        "sampler": "first_n",
+        "samples": "<function list_fewshot_samples at 0x7705d4427d00>"
+      },
+      "num_fewshot": 4,
+      "metric_list": [
+        {
+          "metric": "exact_match",
+          "aggregation": "mean",
+          "higher_is_better": true
+        },
+        {
+          "metric": "math_verify",
+          "aggregation": "mean",
+          "higher_is_better": true
+        }
+      ],
+      "output_type": "generate_until",
+      "generation_kwargs": {
+        "until": [
+          "Problem:"
+        ],
+        "do_sample": true,
+        "temperature": 0.6,
+        "max_new_tokens": 8192
+      },
+      "repeats": 1,
+      "should_decontaminate": false,
+      "metadata": {
+        "version": 2.0,
+        "pretrained": "Qwen/Qwen3-8B",
+        "trust_remote_code": true
+      }
+    },
+    "minerva_math_geometry": {
+      "task": "minerva_math_geometry",
+      "tag": [
+        "math_word_problems"
+      ],
+      "dataset_path": "EleutherAI/hendrycks_math",
+      "dataset_name": "geometry",
+      "dataset_kwargs": {
+        "trust_remote_code": true
+      },
+      "training_split": "train",
+      "test_split": "test",
+      "process_docs": "def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:\n    def _process_doc(doc: dict) -> dict:\n        out_doc = {\n            \"problem\": doc[\"problem\"],\n            \"solution\": doc[\"solution\"],\n            \"answer\": normalize_final_answer(\n                remove_boxed(last_boxed_only_string(doc[\"solution\"]))\n            ),\n        }\n        if getattr(doc, \"few_shot\", None) is not None:\n            out_doc[\"few_shot\"] = True\n        return out_doc\n\n    return dataset.map(_process_doc)\n",
+      "doc_to_text": "def doc_to_text(doc: dict) -> str:\n    return \"Problem:\" + \"\\n\" + doc[\"problem\"] + \"\\n\\n\" + \"Solution:\"\n",
+      "doc_to_target": "{{answer if few_shot is undefined else solution}}",
+      "unsafe_code": false,
+      "process_results": "def process_results(doc: dict, results: List[str]) -> Dict[str, int]:\n    candidates = results[0]\n\n    unnormalized_answer = get_unnormalized_answer(candidates)\n    answer = normalize_final_answer(unnormalized_answer)\n\n    if is_equiv(answer, doc[\"answer\"]):\n        retval = 1\n    else:\n        retval = 0\n\n    # math_verify\n    res = verify(parse(doc[\"answer\"]), parse(candidates))\n    mathval = 1 if res else 0\n\n    results = {\n        \"exact_match\": retval,\n        \"math_verify\": mathval,\n    }\n    return results\n",
+      "description": "",
+      "target_delimiter": " ",
+      "fewshot_delimiter": "\n\n",
+      "fewshot_config": {
+        "sampler": "first_n",
+        "samples": "<function list_fewshot_samples at 0x7705d4209750>"
+      },
+      "num_fewshot": 4,
+      "metric_list": [
+        {
+          "metric": "exact_match",
+          "aggregation": "mean",
+          "higher_is_better": true
+        },
+        {
+          "metric": "math_verify",
+          "aggregation": "mean",
+          "higher_is_better": true
+        }
+      ],
+      "output_type": "generate_until",
+      "generation_kwargs": {
+        "until": [
+          "Problem:"
+        ],
+        "do_sample": true,
+        "temperature": 0.6,
+        "max_new_tokens": 8192
+      },
+      "repeats": 1,
+      "should_decontaminate": false,
+      "metadata": {
+        "version": 2.0,
+        "pretrained": "Qwen/Qwen3-8B",
+        "trust_remote_code": true
+      }
+    },
+    "minerva_math_intermediate_algebra": {
+      "task": "minerva_math_intermediate_algebra",
+      "tag": [
+        "math_word_problems"
+      ],
+      "dataset_path": "EleutherAI/hendrycks_math",
+      "dataset_name": "intermediate_algebra",
+      "dataset_kwargs": {
+        "trust_remote_code": true
+      },
+      "training_split": "train",
+      "test_split": "test",
+      "process_docs": "def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:\n    def _process_doc(doc: dict) -> dict:\n        out_doc = {\n            \"problem\": doc[\"problem\"],\n            \"solution\": doc[\"solution\"],\n            \"answer\": normalize_final_answer(\n                remove_boxed(last_boxed_only_string(doc[\"solution\"]))\n            ),\n        }\n        if getattr(doc, \"few_shot\", None) is not None:\n            out_doc[\"few_shot\"] = True\n        return out_doc\n\n    return dataset.map(_process_doc)\n",
+      "doc_to_text": "def doc_to_text(doc: dict) -> str:\n    return \"Problem:\" + \"\\n\" + doc[\"problem\"] + \"\\n\\n\" + \"Solution:\"\n",
+      "doc_to_target": "{{answer if few_shot is undefined else solution}}",
+      "unsafe_code": false,
+      "process_results": "def process_results(doc: dict, results: List[str]) -> Dict[str, int]:\n    candidates = results[0]\n\n    unnormalized_answer = get_unnormalized_answer(candidates)\n    answer = normalize_final_answer(unnormalized_answer)\n\n    if is_equiv(answer, doc[\"answer\"]):\n        retval = 1\n    else:\n        retval = 0\n\n    # math_verify\n    res = verify(parse(doc[\"answer\"]), parse(candidates))\n    mathval = 1 if res else 0\n\n    results = {\n        \"exact_match\": retval,\n        \"math_verify\": mathval,\n    }\n    return results\n",
+      "description": "",
+      "target_delimiter": " ",
+      "fewshot_delimiter": "\n\n",
+      "fewshot_config": {
+        "sampler": "first_n",
+        "samples": "<function list_fewshot_samples at 0x7705d447b130>"
+      },
+      "num_fewshot": 4,
+      "metric_list": [
+        {
+          "metric": "exact_match",
+          "aggregation": "mean",
+          "higher_is_better": true
+        },
+        {
+          "metric": "math_verify",
+          "aggregation": "mean",
+          "higher_is_better": true
+        }
+      ],
+      "output_type": "generate_until",
+      "generation_kwargs": {
+        "until": [
+          "Problem:"
+        ],
+        "do_sample": true,
+        "temperature": 0.6,
+        "max_new_tokens": 8192
+      },
+      "repeats": 1,
+      "should_decontaminate": false,
+      "metadata": {
+        "version": 2.0,
+        "pretrained": "Qwen/Qwen3-8B",
+        "trust_remote_code": true
+      }
+    },
+    "minerva_math_num_theory": {
+      "task": "minerva_math_num_theory",
+      "tag": [
+        "math_word_problems"
+      ],
+      "dataset_path": "EleutherAI/hendrycks_math",
+      "dataset_name": "number_theory",
+      "dataset_kwargs": {
+        "trust_remote_code": true
+      },
+      "training_split": "train",
+      "test_split": "test",
+      "process_docs": "def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:\n    def _process_doc(doc: dict) -> dict:\n        out_doc = {\n            \"problem\": doc[\"problem\"],\n            \"solution\": doc[\"solution\"],\n            \"answer\": normalize_final_answer(\n                remove_boxed(last_boxed_only_string(doc[\"solution\"]))\n            ),\n        }\n        if getattr(doc, \"few_shot\", None) is not None:\n            out_doc[\"few_shot\"] = True\n        return out_doc\n\n    return dataset.map(_process_doc)\n",
+      "doc_to_text": "def doc_to_text(doc: dict) -> str:\n    return \"Problem:\" + \"\\n\" + doc[\"problem\"] + \"\\n\\n\" + \"Solution:\"\n",
+      "doc_to_target": "{{answer if few_shot is undefined else solution}}",
+      "unsafe_code": false,
+      "process_results": "def process_results(doc: dict, results: List[str]) -> Dict[str, int]:\n    candidates = results[0]\n\n    unnormalized_answer = get_unnormalized_answer(candidates)\n    answer = normalize_final_answer(unnormalized_answer)\n\n    if is_equiv(answer, doc[\"answer\"]):\n        retval = 1\n    else:\n        retval = 0\n\n    # math_verify\n    res = verify(parse(doc[\"answer\"]), parse(candidates))\n    mathval = 1 if res else 0\n\n    results = {\n        \"exact_match\": retval,\n        \"math_verify\": mathval,\n    }\n    return results\n",
+      "description": "",
+      "target_delimiter": " ",
+      "fewshot_delimiter": "\n\n",
+      "fewshot_config": {
+        "sampler": "first_n",
+        "samples": "<function list_fewshot_samples at 0x7705d4479120>"
+      },
+      "num_fewshot": 4,
+      "metric_list": [
+        {
+          "metric": "exact_match",
+          "aggregation": "mean",
+          "higher_is_better": true
+        },
+        {
+          "metric": "math_verify",
+          "aggregation": "mean",
+          "higher_is_better": true
+        }
+      ],
+      "output_type": "generate_until",
+      "generation_kwargs": {
+        "until": [
+          "Problem:"
+        ],
+        "do_sample": true,
+        "temperature": 0.6,
+        "max_new_tokens": 8192
+      },
+      "repeats": 1,
+      "should_decontaminate": false,
+      "metadata": {
+        "version": 2.0,
+        "pretrained": "Qwen/Qwen3-8B",
+        "trust_remote_code": true
+      }
+    },
+    "minerva_math_prealgebra": {
+      "task": "minerva_math_prealgebra",
+      "tag": [
+        "math_word_problems"
+      ],
+      "dataset_path": "EleutherAI/hendrycks_math",
+      "dataset_name": "prealgebra",
+      "dataset_kwargs": {
+        "trust_remote_code": true
+      },
+      "training_split": "train",
+      "test_split": "test",
+      "process_docs": "def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:\n    def _process_doc(doc: dict) -> dict:\n        out_doc = {\n            \"problem\": doc[\"problem\"],\n            \"solution\": doc[\"solution\"],\n            \"answer\": normalize_final_answer(\n                remove_boxed(last_boxed_only_string(doc[\"solution\"]))\n            ),\n        }\n        if getattr(doc, \"few_shot\", None) is not None:\n            out_doc[\"few_shot\"] = True\n        return out_doc\n\n    return dataset.map(_process_doc)\n",
+      "doc_to_text": "def doc_to_text(doc: dict) -> str:\n    return \"Problem:\" + \"\\n\" + doc[\"problem\"] + \"\\n\\n\" + \"Solution:\"\n",
+      "doc_to_target": "{{answer if few_shot is undefined else solution}}",
+      "unsafe_code": false,
+      "process_results": "def process_results(doc: dict, results: List[str]) -> Dict[str, int]:\n    candidates = results[0]\n\n    unnormalized_answer = get_unnormalized_answer(candidates)\n    answer = normalize_final_answer(unnormalized_answer)\n\n    if is_equiv(answer, doc[\"answer\"]):\n        retval = 1\n    else:\n        retval = 0\n\n    # math_verify\n    res = verify(parse(doc[\"answer\"]), parse(candidates))\n    mathval = 1 if res else 0\n\n    results = {\n        \"exact_match\": retval,\n        \"math_verify\": mathval,\n    }\n    return results\n",
+      "description": "",
+      "target_delimiter": " ",
+      "fewshot_delimiter": "\n\n",
+      "fewshot_config": {
+        "sampler": "first_n",
+        "samples": "<function list_fewshot_samples at 0x7705d4427f40>"
+      },
+      "num_fewshot": 4,
+      "metric_list": [
+        {
+          "metric": "exact_match",
+          "aggregation": "mean",
+          "higher_is_better": true
+        },
+        {
+          "metric": "math_verify",
+          "aggregation": "mean",
+          "higher_is_better": true
+        }
+      ],
+      "output_type": "generate_until",
+      "generation_kwargs": {
+        "until": [
+          "Problem:"
+        ],
+        "do_sample": true,
+        "temperature": 0.6,
+        "max_new_tokens": 8192
+      },
+      "repeats": 1,
+      "should_decontaminate": false,
+      "metadata": {
+        "version": 2.0,
+        "pretrained": "Qwen/Qwen3-8B",
+        "trust_remote_code": true
+      }
+    },
+    "minerva_math_precalc": {
+      "task": "minerva_math_precalc",
+      "tag": [
+        "math_word_problems"
+      ],
+      "dataset_path": "EleutherAI/hendrycks_math",
+      "dataset_name": "precalculus",
+      "dataset_kwargs": {
+        "trust_remote_code": true
+      },
+      "training_split": "train",
+      "test_split": "test",
+      "process_docs": "def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:\n    def _process_doc(doc: dict) -> dict:\n        out_doc = {\n            \"problem\": doc[\"problem\"],\n            \"solution\": doc[\"solution\"],\n            \"answer\": normalize_final_answer(\n                remove_boxed(last_boxed_only_string(doc[\"solution\"]))\n            ),\n        }\n        if getattr(doc, \"few_shot\", None) is not None:\n            out_doc[\"few_shot\"] = True\n        return out_doc\n\n    return dataset.map(_process_doc)\n",
+      "doc_to_text": "def doc_to_text(doc: dict) -> str:\n    return \"Problem:\" + \"\\n\" + doc[\"problem\"] + \"\\n\\n\" + \"Solution:\"\n",
+      "doc_to_target": "{{answer if few_shot is undefined else solution}}",
+      "unsafe_code": false,
+      "process_results": "def process_results(doc: dict, results: List[str]) -> Dict[str, int]:\n    candidates = results[0]\n\n    unnormalized_answer = get_unnormalized_answer(candidates)\n    answer = normalize_final_answer(unnormalized_answer)\n\n    if is_equiv(answer, doc[\"answer\"]):\n        retval = 1\n    else:\n        retval = 0\n\n    # math_verify\n    res = verify(parse(doc[\"answer\"]), parse(candidates))\n    mathval = 1 if res else 0\n\n    results = {\n        \"exact_match\": retval,\n        \"math_verify\": mathval,\n    }\n    return results\n",
+      "description": "",
+      "target_delimiter": " ",
+      "fewshot_delimiter": "\n\n",
+      "fewshot_config": {
+        "sampler": "first_n",
+        "samples": "<function list_fewshot_samples at 0x7705d4545750>"
+      },
+      "num_fewshot": 4,
+      "metric_list": [
+        {
+          "metric": "exact_match",
+          "aggregation": "mean",
+          "higher_is_better": true
+        },
+        {
+          "metric": "math_verify",
+          "aggregation": "mean",
+          "higher_is_better": true
+        }
+      ],
+      "output_type": "generate_until",
+      "generation_kwargs": {
+        "until": [
+          "Problem:"
+        ],
+        "do_sample": true,
+        "temperature": 0.6,
+        "max_new_tokens": 8192
+      },
+      "repeats": 1,
+      "should_decontaminate": false,
+      "metadata": {
+        "version": 2.0,
+        "pretrained": "Qwen/Qwen3-8B",
+        "trust_remote_code": true
+      }
+    }
+  },
+  "versions": {
+    "minerva_math": 1.0,
+    "minerva_math_algebra": 2.0,
+    "minerva_math_counting_and_prob": 2.0,
+    "minerva_math_geometry": 2.0,
+    "minerva_math_intermediate_algebra": 2.0,
+    "minerva_math_num_theory": 2.0,
+    "minerva_math_prealgebra": 2.0,
+    "minerva_math_precalc": 2.0
+  },
+  "n-shot": {
+    "minerva_math_algebra": 4,
+    "minerva_math_counting_and_prob": 4,
+    "minerva_math_geometry": 4,
+    "minerva_math_intermediate_algebra": 4,
+    "minerva_math_num_theory": 4,
+    "minerva_math_prealgebra": 4,
+    "minerva_math_precalc": 4
+  },
+  "higher_is_better": {
+    "minerva_math": {
+      "exact_match": true,
+      "math_verify": true
+    },
+    "minerva_math_algebra": {
+      "exact_match": true,
+      "math_verify": true
+    },
+    "minerva_math_counting_and_prob": {
+      "exact_match": true,
+      "math_verify": true
+    },
+    "minerva_math_geometry": {
+      "exact_match": true,
+      "math_verify": true
+    },
+    "minerva_math_intermediate_algebra": {
+      "exact_match": true,
+      "math_verify": true
+    },
+    "minerva_math_num_theory": {
+      "exact_match": true,
+      "math_verify": true
+    },
+    "minerva_math_prealgebra": {
+      "exact_match": true,
+      "math_verify": true
+    },
+    "minerva_math_precalc": {
+      "exact_match": true,
+      "math_verify": true
+    }
+  },
+  "n-samples": {
+    "minerva_math_algebra": {
+      "original": 1187,
+      "effective": 96
+    },
+    "minerva_math_counting_and_prob": {
+      "original": 474,
+      "effective": 96
+    },
+    "minerva_math_geometry": {
+      "original": 479,
+      "effective": 96
+    },
+    "minerva_math_intermediate_algebra": {
+      "original": 903,
+      "effective": 96
+    },
+    "minerva_math_num_theory": {
+      "original": 540,
+      "effective": 96
+    },
+    "minerva_math_prealgebra": {
+      "original": 871,
+      "effective": 96
+    },
+    "minerva_math_precalc": {
+      "original": 546,
+      "effective": 96
+    }
+  },
+  "config": {
+    "model": "hf",
+    "model_args": "pretrained=Qwen/Qwen3-8B,trust_remote_code=True",
+    "model_num_parameters": 8190735360,
+    "model_dtype": "torch.bfloat16",
+    "model_revision": "main",
+    "model_sha": "9c925d64d72725edaf899c6cb9c377fd0709d9c5",
+    "batch_size": "24",
+    "batch_sizes": [],
+    "device": null,
+    "use_cache": null,
+    "limit": 96.0,
+    "bootstrap_iters": 100000,
+    "gen_kwargs": {
+      "max_new_tokens": 8192,
+      "temperature": 0.6,
+      "do_sample": true
+    },
+    "random_seed": 0,
+    "numpy_seed": 1234,
+    "torch_seed": 1234,
+    "fewshot_seed": 1234
+  },
+  "git_hash": "aabd1b5",
+  "date": 1749239868.7511182,
+  "pretty_env_info": "'NoneType' object has no attribute 'splitlines'",
+  "transformers_version": "4.52.4",
+  "lm_eval_version": "0.4.8",
+  "upper_git_hash": null,
+  "tokenizer_pad_token": [
+    "<|endoftext|>",
+    "151643"
+  ],
+  "tokenizer_eos_token": [
+    "<|im_end|>",
+    "151645"
+  ],
+  "tokenizer_bos_token": [
+    null,
+    "None"
+  ],
+  "eot_token_id": 151645,
+  "max_length": 40960,
+  "task_hashes": {},
+  "model_source": "hf",
+  "model_name": "Qwen/Qwen3-8B",
+  "model_name_sanitized": "Qwen__Qwen3-8B",
+  "system_instruction": null,
+  "system_instruction_sha": null,
+  "fewshot_as_multiturn": false,
+  "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and message.content is string and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if message.content is string %}\n        {%- set content = message.content %}\n    {%- else %}\n        {%- set content = '' %}\n    {%- endif %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}",
+  "chat_template_sha": "a55ee1b1660128b7098723e0abcd92caa0788061051c62d51cbe87d9cf1974d8",
+  "start_time": 2482360.84619705,
+  "end_time": 2496848.819164653,
+  "total_evaluation_time_seconds": "14487.972967602778"
+}
